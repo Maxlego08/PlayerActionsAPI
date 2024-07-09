@@ -3,9 +3,6 @@ package fr.maxlego08.playeractions;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 /**
  * The Action class represents an action that can be executed with an optional delay.
  * Subclasses should provide the specific action to be performed by implementing the getRunnableAction method.
@@ -90,19 +87,12 @@ public abstract class Action {
     }
 
     /**
-     * Translates color codes in a string, including hex color codes.
+     * Translates color codes in a string.
      *
      * @param message The message containing color codes.
      * @return The message with color codes translated.
      */
     protected String color(String message) {
-        Pattern pattern = Pattern.compile("#[a-fA-F0-9]{6}");
-        Matcher matcher = pattern.matcher(message);
-        while (matcher.find()) {
-            String color = message.substring(matcher.start(), matcher.end());
-            message = message.replace(color, String.valueOf(net.md_5.bungee.api.ChatColor.of(color)));
-            matcher = pattern.matcher(message);
-        }
         return net.md_5.bungee.api.ChatColor.translateAlternateColorCodes('&', message);
     }
 }
