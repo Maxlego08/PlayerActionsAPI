@@ -8,6 +8,7 @@ import fr.maxlego08.playeractions.actions.Message;
 import fr.maxlego08.playeractions.actions.PlayerCommand;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -15,6 +16,16 @@ import java.util.Optional;
  * Utility class for loading actions from a list of command strings.
  */
 public class ActionsAPI {
+
+    /**
+     * Loads a array of actions from a list of command strings.
+     *
+     * @param commands the list of command strings
+     * @return the list of loaded actions
+     */
+    public static List<Action> loadActions(String... commands) {
+        return ActionsAPI.loadActions(Arrays.asList(commands));
+    }
 
     /**
      * Loads a list of actions from a list of command strings.
