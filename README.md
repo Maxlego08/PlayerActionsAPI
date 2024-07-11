@@ -94,7 +94,7 @@ public class Example extends JavaPlugin {
 ````
 
 ### Register actions
-To use the actions just run the `registerAction` method. The method requires a plugin and an action type.
+To use the actions just run the `registerAction(JavaPlugin plugin, ActionType type)` method. The method requires a plugin and an action type.
 
 ````java
 public class CustomAction extends Action {
@@ -133,4 +133,4 @@ public class Example extends JavaPlugin {
 }
 ````
 
-With this method you can override any action type already registered.
+With the method `registerAction(JavaPlugin plugin, ActionType type, Class<? extends Action> action)` you can override any action type already registered.
