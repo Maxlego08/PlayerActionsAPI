@@ -1,5 +1,7 @@
 package fr.maxlego08.playeractions;
 
+import me.clip.placeholderapi.PlaceholderAPI;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 
@@ -63,7 +65,11 @@ public abstract class Action {
      * @return The parsed string with placeholders replaced.
      */
     protected String parse(Player player, String string, Object... arguments) {
-        return parse(string.replace("%player%", player.getName()), arguments);
+        string = string.replace("%player%", player.getName());
+        if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null) {
+            string = PlaceholderAPI.setPlaceholders(player, string);
+        }
+        return parse(string, arguments);
     }
 
     /**
