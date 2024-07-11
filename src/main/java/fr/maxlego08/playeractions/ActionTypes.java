@@ -54,7 +54,7 @@ public enum ActionTypes implements ActionType {
     }
 
     @Override
-    public Class<? extends Action> getAction() {
+    public Class<? extends Action> getDefaultAction() {
         return this.action;
     }
 }

@@ -16,7 +16,7 @@ public class ActionsAPI {
     static {
         actions = new HashMap<>();
         for (ActionTypes actionType : ActionTypes.values()) {
-            actions.put(actionType, actionType.getAction());
+            actions.put(actionType, actionType.getDefaultAction());
         }
     }
 
@@ -53,16 +53,48 @@ public class ActionsAPI {
     }
 
     /**
+     * Registers a custom ActionType, can be use to override default actions.
+     *
+     * @param plugin the plugin registering the action
+     * @param actionType the action type to register
+     * @param action the action class to register
+     */
+    public static void registerAction(JavaPlugin plugin, ActionType actionType, Class<? extends Action> action) {
+        if(actions.containsKey(actionType)) {
+            plugin.getLogger().info("Action type " + actionType.getIdentifier() + " has been overrided.");
+        }
+        actions.put(actionType, action);
+    }
+
+    /**
      * Registers a custom ActionType
      *
      * @param plugin the plugin registering the action
      * @param actionType the action type to register
      */
     public static void registerAction(JavaPlugin plugin, ActionType actionType) {
-        if(actions.containsKey(actionType)) {
-            plugin.getLogger().info("Action type " + actionType.getIdentifier() + " has been overrided.");
-        }
-        actions.put(actionType, actionType.getAction());
+        registerAction(plugin, actionType, actionType.getDefaultAction());
+    }
+
+    /**
+     * Retrieves the action class corresponding to the given ActionType.
+     *
+     * @param actionType the action type
+     * @return the action class
+     */
+    public static Class<? extends Action> getAction(ActionType actionType) {
+        return getAction(actionType, false);
+    }
+
+    /**
+     * Retrieves the action class corresponding to the given ActionType.
+     *
+     * @param actionType the action type
+     * @param defaulted whether to use the default action
+     * @return the action class
+     */
+    public static Class<? extends Action> getAction(ActionType actionType, boolean defaulted) {
+        return defaulted ? actionType.getDefaultAction() : actions.get(actionType);
     }
 
     /**
@@ -121,7 +153,7 @@ public class ActionsAPI {
                 content = content.substring(endIndex + 1).trim();
             }
 
-            Class<? extends Action> actionClzz = actionType.getAction();
+            Class<? extends Action> actionClzz = ActionsAPI.actions.get(actionType);
             Action action;
             try {
                 action = ActionsAPI.instantiateAction(actionClzz, delay, content);

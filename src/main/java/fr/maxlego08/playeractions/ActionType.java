@@ -4,6 +4,6 @@ public interface ActionType {
 
     String getIdentifier();
 
-    Class<? extends Action> getAction();
+    Class<? extends Action> getDefaultAction();
 
 }
