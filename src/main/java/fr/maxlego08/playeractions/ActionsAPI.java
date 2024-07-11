@@ -1,20 +1,91 @@
 package fr.maxlego08.playeractions;
 
-import fr.maxlego08.playeractions.actions.Broadcast;
-import fr.maxlego08.playeractions.actions.Chat;
-import fr.maxlego08.playeractions.actions.Close;
-import fr.maxlego08.playeractions.actions.ConsoleCommand;
-import fr.maxlego08.playeractions.actions.Message;
-import fr.maxlego08.playeractions.actions.PlayerCommand;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import org.bukkit.plugin.java.JavaPlugin;
+
+import java.lang.reflect.Constructor;
+import java.util.*;
 
 /**
  * Utility class for loading actions from a list of command strings.
  */
 public class ActionsAPI {
+
+    private final static Map<ActionType, Class<? extends Action>> actions;
+
+    static {
+        actions = new HashMap<>();
+        for (ActionTypes actionType : ActionTypes.values()) {
+            actions.put(actionType, actionType.getAction());
+        }
+    }
+
+    /**
+     * Instantiates an action with the specified class and arguments.
+     *
+     * @param actionClass The class to instantiate.
+     * @param delay The delay in ticks.
+     * @param string The string argument.
+     * @return An instance of the specified class.
+     * @throws Exception if instantiation fails.
+     */
+    private static Action instantiateAction(Class<? extends Action> actionClass, int delay, String string) throws Exception {
+
+        Constructor<?>[] constructors = actionClass.getConstructors();
+
+        for (Constructor<?> constructor : constructors) {
+            Class<?>[] parameterTypes = constructor.getParameterTypes();
+
+            if (parameterTypes.length == 2) {
+                if (parameterTypes[0] == int.class && parameterTypes[1] == String.class) {
+                    return (Action) constructor.newInstance(delay, string);
+                } else if (parameterTypes[0] == String.class && parameterTypes[1] == int.class) {
+                    return (Action) constructor.newInstance(string, delay);
+                }
+            }
+
+            if (parameterTypes.length == 1) {
+                return (Action) constructor.newInstance(delay);
+            }
+        }
+
+        throw new IllegalArgumentException("No suitable constructor found for the given parameters.");
+    }
+
+    /**
+     * Registers a custom ActionType
+     *
+     * @param plugin the plugin registering the action
+     * @param actionType the action type to register
+     */
+    public static void registerAction(JavaPlugin plugin, ActionType actionType) {
+        if(actions.containsKey(actionType)) {
+            plugin.getLogger().info("Action type " + actionType.getIdentifier() + " has been overrided.");
+        }
+        actions.put(actionType, actionType.getAction());
+    }
+
+    /**
+     * Retrieves the ActionType corresponding to the given identifier.
+     *
+     * @param identifier the identifier of the action type
+     * @return an Optional containing the ActionType if found, otherwise empty
+     */
+    public static Optional<ActionType> getByIdentifier(String identifier) {
+        return actions.keySet().stream()
+                .filter(actionType -> actionType.getIdentifier().equalsIgnoreCase(identifier))
+                .findFirst();
+    }
+
+    /**
+     * Loads a array of actions from a list of command strings.
+     *
+     * @param commands the list of command strings
+     * @return the list of loaded actions
+     */
+    public static List<Action> loadActions(String... commands) {
+        return ActionsAPI.loadActions(Arrays.asList(commands));
+    }
 
     /**
      * Loads a list of actions from a list of command strings.
@@ -32,9 +103,11 @@ public class ActionsAPI {
             if (arguments.length < 2) return;
 
             String identifier = arguments[0];
-            Optional<ActionType> optional = ActionType.getByIdentifier(identifier);
+            Optional<ActionType> optional = ActionsAPI.getByIdentifier(identifier);
 
-            if (!optional.isPresent()) return;
+            if (!optional.isPresent()) {
+                throw new IllegalArgumentException("No action type found for identifier " + identifier + ", maybe you forgot to register it?");
+            };
 
             ActionType actionType = optional.get();
 
@@ -48,31 +121,16 @@ public class ActionsAPI {
                 content = content.substring(endIndex + 1).trim();
             }
 
-            Action action = null;
-            switch (actionType) {
-                case CONSOLE:
-                    action = new ConsoleCommand(delay, content);
-                    break;
-                case PLAYER:
-                    action = new PlayerCommand(delay, content);
-                    break;
-                case MESSAGE:
-                    action = new Message(delay, content);
-                    break;
-                case BROADCAST:
-                    action = new Broadcast(delay, content);
-                    break;
-                case CHAT:
-                    action = new Chat(delay, content);
-                    break;
-                case CLOSE:
-                    action = new Close(delay);
-                    break;
+            Class<? extends Action> actionClzz = actionType.getAction();
+            Action action;
+            try {
+                action = ActionsAPI.instantiateAction(actionClzz, delay, content);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
             }
 
-            if (action != null) {
-                actions.add(action);
-            }
+
+            actions.add(action);
         });
 
         return actions;

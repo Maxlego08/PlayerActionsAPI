@@ -92,3 +92,45 @@ public class Example extends JavaPlugin {
     }
 }
 ````
+
+### Register actions
+To use the actions just run the `registerAction` method. The method requires a plugin and an action type.
+
+````java
+public class CustomAction extends Action {
+
+    public CustomAction(int delay) {
+        super(delay);
+    }
+
+    @Override
+    protected Runnable getRunnableAction(Plugin plugin, Player player) {
+        return () -> player.sendMessage("Hello, " + player.getName() + "!");
+    }
+}
+````
+````java
+public class CustomActionType implements ActionType {
+
+    @Override
+    public String getIdentifier() {
+        return "[custom]";
+    }
+
+    @Override
+    public Class<? extends Action> getAction() {
+        return CustomAction.class;
+    }
+}
+````
+````java
+public class Example extends JavaPlugin {
+
+    public void onEnable() {
+        ActionsAPI.registerAction(this, new CustomActionType());
+        ActionsAPI.loadActions("[custom] <delay:20>");
+    }
+}
+````
+
+With this method you can override any action type already registered.
