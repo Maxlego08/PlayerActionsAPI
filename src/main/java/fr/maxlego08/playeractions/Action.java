@@ -66,7 +66,8 @@ public abstract class Action {
      */
     protected String parse(Player player, String string, Object... arguments) {
         string = string.replace("%player%", player.getName());
-        if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null) {
+        long count = string.chars().filter(ch -> ch == '%').count();
+        if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null && count >= 2) {
             string = PlaceholderAPI.setPlaceholders(player, string);
         }
         return parse(string, arguments);
