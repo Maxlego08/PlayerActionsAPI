@@ -1,0 +1,5 @@
+name: PlayersActions
+version: '1.0'
+main: fr.maxlego08.playeractions.Test
+softdepend:
+  - PlaceholderAPI
